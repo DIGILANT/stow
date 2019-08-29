@@ -94,7 +94,7 @@ type Container interface {
 	// count is the number of items to return per page.
 	// The returned cursor can be checked with IsCursorEnd to
 	// decide if there are any more items or not.
-	Items(prefix, cursor string, count int) ([]Item, string, error)
+	Items(prefix, cursor string, count, depth int) ([]Item, string, error)
 	// RemoveItem removes the Item with the specified ID.
 	RemoveItem(id string) error
 	// Put creates a new Item with the specified name, and contents
