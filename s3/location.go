@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/graymeta/stow"
+	"github.com/digilant/stow"
 	"github.com/pkg/errors"
 )
 
@@ -239,7 +239,7 @@ func (l *location) ItemByURL(url *url.URL) (stow.Item, error) {
 	}
 
 	// url looks like this: s3://<containerName>/<itemName>
-	// example: s3://graymeta-demo/DPtest.txt
+	// example: s3://digilant-demo/DPtest.txt
 	containerName := url.Host
 	itemName := strings.TrimPrefix(url.Path, "/")
 

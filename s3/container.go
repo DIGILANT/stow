@@ -2,13 +2,14 @@ package s3
 
 import (
 	"io"
+	"path/filepath"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/graymeta/stow"
+	"github.com/digilant/stow"
 	"github.com/pkg/errors"
 )
 
@@ -40,9 +41,11 @@ func (c *container) Item(id string) (stow.Item, error) {
 	return c.getItem(id)
 }
 
+const separator = string(filepath.Separator)
+
 // Items sends a request to retrieve a list of items that are prepended with
 // the prefix argument. The 'cursor' variable facilitates pagination.
-func (c *container) Items(prefix, cursor string, count int) ([]stow.Item, string, error) {
+func (c *container) Items(prefix, cursor string, count, depth int) ([]stow.Item, string, error) {
 	itemLimit := int64(count)
 
 	params := &s3.ListObjectsV2Input{
@@ -62,6 +65,21 @@ func (c *container) Items(prefix, cursor string, count int) ([]stow.Item, string
 	for _, object := range response.Contents {
 		if *object.StorageClass == "GLACIER" {
 			continue
+		}
+		if depth > 0 {
+			key := *object.Key
+			i := strings.Index(key, prefix)
+			if i >= 0 {
+				p := key[i+len(prefix):]
+				if p[0] == '/' {
+					p = p[1:]
+				}
+
+				c := strings.Count(p, separator)
+				if c >= depth {
+					continue
+				}
+			}
 		}
 		etag := cleanEtag(*object.ETag) // Copy etag value and remove the strings.
 		object.ETag = &etag             // Assign the value to the object field representing the item.
@@ -84,7 +102,7 @@ func (c *container) Items(prefix, cursor string, count int) ([]stow.Item, string
 	// Create a marker and determine if the list of items to retrieve is complete.
 	// If not, the last file is the input to the value of after which item to start
 	startAfter := ""
-	if *response.IsTruncated {
+	if *response.IsTruncated && len(containerItems) > 0 {
 		startAfter = containerItems[len(containerItems)-1].Name()
 	}
 
