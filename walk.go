@@ -14,20 +14,25 @@ type WalkFunc func(item Item, err error) error
 // Returns the first error returned by the WalkFunc or
 // nil if no errors were returned.
 // The pageSize is the number of Items to get per request.
-func Walk(container Container, prefix string, pageSize int, fn WalkFunc) error {
+// depth is the number of recursive folder to walk in.
+func Walk(container Container, prefix string, pageSize, depth int, fn WalkFunc) error {
 	var (
 		err    error
 		items  []Item
 		cursor = CursorStart
 	)
 	for {
-		items, cursor, err = container.Items(prefix, cursor, pageSize)
+		items, cursor, err = container.Items(prefix, cursor, pageSize, depth)
 		if err != nil {
 			err = fn(nil, err)
 			if err != nil {
 				return err
 			}
 		}
+		if len(items) == 0 {
+			break
+		}
+
 		for _, item := range items {
 			err = fn(item, nil)
 			if err != nil {
