@@ -6,9 +6,10 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
-	"github.com/graymeta/stow"
+	"github.com/digilant/stow"
 )
 
 type container struct {
@@ -77,7 +78,7 @@ func (c *container) Put(name string, r io.Reader, size int64, metadata map[strin
 	return item, nil
 }
 
-func (c *container) Items(prefix, cursor string, count int) ([]stow.Item, string, error) {
+func (c *container) Items(prefix, cursor string, count, depth int) ([]stow.Item, string, error) {
 	prefix = filepath.FromSlash(prefix)
 	files, err := flatdirs(c.path)
 	if err != nil {
@@ -112,8 +113,23 @@ func (c *container) Items(prefix, cursor string, count int) ([]stow.Item, string
 		if err != nil {
 			return nil, "", err
 		}
-		if !strings.HasPrefix(f.Name(), prefix) {
+		if !strings.HasPrefix(path, prefix) {
 			continue
+		}
+		// checking depth.
+		if depth > 0 {
+			i := strings.Index(c.path, prefix)
+			if i >= 0 {
+				p := path[i+len(prefix):]
+				if p[0] == '/' {
+					p = p[1:]
+				}
+
+				c := strings.Count(p, separator)
+				if c >= depth {
+					continue
+				}
+			}
 		}
 		item := &item{
 			path:          path,
@@ -171,8 +187,13 @@ func flatdirs(path string) ([]os.FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
+	sort.Slice(list, func(i, j int) bool {
+		return strings.Count(list[i].Name(), separator) < strings.Count(list[j].Name(), separator)
+	})
 	return list, nil
 }
+
+const separator = string(filepath.Separator)
 
 type fileinfo struct {
 	os.FileInfo

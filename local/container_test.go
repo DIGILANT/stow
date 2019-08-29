@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/cheekybits/is"
-	"github.com/graymeta/stow"
-	"github.com/graymeta/stow/local"
+	"github.com/digilant/stow"
+	"github.com/digilant/stow/local"
 )
 
 func TestItemsPaging(t *testing.T) {
