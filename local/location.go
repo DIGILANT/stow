@@ -152,7 +152,7 @@ func (l *location) filesToContainers(root string, files ...string) ([]stow.Conta
 		}
 		cs = append(cs, &container{
 			name: name,
-			path: path,
+			path: root,
 		})
 	}
 	return cs, nil

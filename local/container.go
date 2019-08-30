@@ -109,16 +109,14 @@ func (c *container) Items(prefix, cursor string, count, depth int) ([]stow.Item,
 		if f.IsDir() {
 			continue
 		}
-		path, err := filepath.Abs(filepath.Join(c.path, f.Name()))
-		if err != nil {
-			return nil, "", err
-		}
-		if !strings.HasPrefix(path, prefix) {
+		path := filepath.Join(c.path, f.Name())
+
+		if len(prefix) > 0 && !strings.HasPrefix(path, prefix) {
 			continue
 		}
 		// checking depth.
-		if depth > 0 {
-			i := strings.Index(c.path, prefix)
+		if len(prefix) > 0 && depth > 0 {
+			i := strings.Index(path, prefix)
 			if i >= 0 {
 				p := path[i+len(prefix):]
 				if p[0] == '/' {
