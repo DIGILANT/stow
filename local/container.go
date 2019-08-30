@@ -49,9 +49,10 @@ func (c *container) RemoveItem(id string) error {
 	return os.Remove(id)
 }
 
-func (c *container) Put(name string, r io.Reader, size int64, metadata map[string]interface{}) (stow.Item, error) {
-	if len(metadata) > 0 {
-		return nil, stow.NotSupported("metadata")
+func (c *container) Put(name string, r io.Reader, size int64, _ map[string]interface{}) (stow.Item, error) {
+	rel, err := filepath.Rel(c.path, name)
+	if err == nil {
+		name = rel
 	}
 
 	path := filepath.Join(c.path, filepath.FromSlash(name))
@@ -59,7 +60,7 @@ func (c *container) Put(name string, r io.Reader, size int64, metadata map[strin
 		path:          path,
 		contPrefixLen: len(c.path) + 1,
 	}
-	err := os.MkdirAll(filepath.Dir(path), 0777)
+	err = os.MkdirAll(filepath.Dir(path), 0777)
 	if err != nil {
 		return nil, err
 	}
@@ -68,6 +69,7 @@ func (c *container) Put(name string, r io.Reader, size int64, metadata map[strin
 		return nil, err
 	}
 	defer f.Close()
+
 	n, err := io.Copy(f, r)
 	if err != nil {
 		return nil, err
