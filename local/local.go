@@ -36,6 +36,14 @@ func init() {
 		}
 		info, err := os.Stat(path)
 		if err != nil {
+			// if doesn't exist create the dir
+			if os.IsNotExist(err) {
+				err = os.MkdirAll(path, 0777)
+				return &location{
+					config: config,
+				}, err
+			}
+
 			return nil, err
 		}
 		if !info.IsDir() {
