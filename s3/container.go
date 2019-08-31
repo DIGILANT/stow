@@ -71,13 +71,15 @@ func (c *container) Items(prefix, cursor string, count, depth int) ([]stow.Item,
 			i := strings.Index(key, prefix)
 			if i >= 0 {
 				p := key[i+len(prefix):]
-				if p[0] == '/' {
-					p = p[1:]
-				}
+				if len(p) > 0 {
+					if p[0] == '/' {
+						p = p[1:]
+					}
 
-				c := strings.Count(p, separator)
-				if c >= depth {
-					continue
+					c := strings.Count(p, separator)
+					if c >= depth {
+						continue
+					}
 				}
 			}
 		}
