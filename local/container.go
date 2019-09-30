@@ -74,7 +74,7 @@ func (c *container) Put(name string, r io.Reader, size int64, _ map[string]inter
 	if err != nil {
 		return nil, err
 	}
-	if n != size {
+	if size > 0 && n != size {
 		return nil, errors.New("bad size")
 	}
 	return item, nil
